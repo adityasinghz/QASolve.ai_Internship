@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script>
+
+        function showAlert() {
+            alert('The form has been submitted!');
+        }
+        
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                showAlert();
+            });
+        });
+    </script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Registration</title>
+</head>
+<body>
+    <h1>Race Registration</h1>
+    <form>
+        <div>
+            <label for="first_name">First Name</label>
+            <input id="first_name" name="first_name" required>
+        </div>
+        <div>
+            <label for="last_name">Last Name</label>
+            <input id="last_name" name="last_name" required>
+        </div>
+        <div>
+            <label>Select a Race:</label>
+        </div>
+        <div>
+            <input type="radio" id="funRun5k" value="5k" name="race" required>
+            <label for="5k">Fun Run 5k</label>
+        </div>
+        <div>
+            <input id="hm" type="radio" value="hm" name="race" required>
+            <label for="hm">Half Marathon</label>
+        </div>
+        <div>
+            <input type="radio" id="fm" value="fm" name="race" required>
+            <label for="fm">Full Marathon</label>
+        </div>
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" required name="email">
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" required name="password">
+        </div>
+        <div>
+            <label>Select Division</label>
+            <select name="division" id="division">
+                <option value="kids">Under 18</option>
+                <option value="elder">Above 18</option>
+                <option value="exact">Exact 18</option>
+            </select>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>
