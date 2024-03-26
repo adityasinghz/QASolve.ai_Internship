@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.3",
+    "jsdom": "^24.0.0",
+    "mutation-observer": "^1.0.3",
     "puppeteer": "^22.4.1",
     "puppeteer-repo": "github:GoogleChrome/puppeteer",
     "websocket": "^1.0.34",

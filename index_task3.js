@@ -5,19 +5,35 @@ const PORT = process.env.PORT || 3001;
 
 
 
-async function toastDebug() {
-    const browser = await puppeteer.launch({ devtools: true });
-    const page = await browser.newPage(); // Create a new page
-    await page.goto('http://localhost:3000'); // Replace with your React app URL
-    await page.waitForSelector('#root > div > button');
-    await page.click('#root > div > button');
-    await page.evaluate(() => {
-        setTimeout(() => {
-            debugger; // This will trigger the debugger after 3 seconds
-        }, 4000);
-    });
-}
 
+
+
+
+async function toastDebug() {
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await browser.newPage();
+
+    const client = await page.target().createCDPSession();
+
+    await client.send('Runtime.enable');
+    await client.send('DOM.enable');
+    client.on('Runtime.consoleAPICalled', event => {
+        const { type, args } = event;
+        if (type === 'info') {
+            const message = args[0].value; // Extract the message text
+            console.log('Console message:', message);
+        }
+    });
+
+
+    client.on('DOM.attributeModified', event => {
+        console.log('DOM attribute modified:', event);
+    });
+
+    await page.goto('http://localhost:3000/');
+
+    await browser.close();
+}
 
 async function networkInter() {
     const browser = await puppeteer.launch({ headless: false })
@@ -36,28 +52,33 @@ async function networkInter() {
     await page.screenshot({ path: 'screenshot.png' })
 
     await browser.close()
-
 }
 
-async function eventL() {
-    const browser = await puppeteer.launch();
+async function extractEvents() {
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
+    await page.goto('http://localhost:3000');
 
-    page.on('console', consoleObj => console.log(consoleObj.text()));
+    const client = await page.target().createCDPSession();
 
-    page.on('dialog', async dialog => {
-        console.log(dialog.message());
-        await dialog.dismiss();
+    await client.send('Debugger.enable');
+
+    await client.send('DOMDebugger.setEventListenerBreakpoint', {
+        eventName: '*'
     });
 
-    page.on('request', request => console.log('Request: ', request.url()));
+    await waitFor(5000);
+    await client.send('Debugger.resume');
+    setTimeout(() => {
+        browser.close();
+    }, 10000);
 
-    page.on('response', response => console.log('Response: ', response.url()));
-
-    await page.goto('https://www.udemy.com/');
-
-    await browser.close();
 }
+
+const waitFor = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 
 app.get('/toast', async (req, res) => {
     try {
@@ -79,12 +100,12 @@ app.get('/inter', async (req, res) => {
     }
 });
 
-app.get('/eventL', async (req, res) => {
+app.get('/event-listeners', async (req, res) => {
     try {
-        await eventL(); // Execute toastDebug function when /toast endpoint is accessed
-        res.send("Event L");
+        await extractEvents();
+        res.send("eventListeners");
     } catch (error) {
-        console.error('Error fetching function:', error.message);
+        console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
